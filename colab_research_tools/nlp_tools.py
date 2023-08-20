@@ -1,7 +1,11 @@
 import os
 import shutil
+from collections import Counter
+
+import numpy as np
 
 from . import utils
+
 
 def prepare_nltk(root_data_dir='/srv/data'):
     nltk_data_dir = os.path.join(root_data_dir, 'nltk_data')
@@ -12,35 +16,144 @@ def prepare_nltk(root_data_dir='/srv/data'):
     nltk.download('stopwords', download_dir=nltk_data_dir)
     nltk.download('wordnet', download_dir=nltk_data_dir)  # Lemmas
     nltk.download('omw-1.4', download_dir=nltk_data_dir)  # Lemmas
-    nltk.download('averaged_perceptron_tagger', download_dir=nltk_data_dir)  # POS tags
-    nltk.data.path.append(nltk_data_dir) # тут почему-то корневую надо указывать ¯\_(ツ)_/¯
+    nltk.download(
+        'averaged_perceptron_tagger',
+        download_dir=nltk_data_dir)  # POS tags
+    # тут почему-то корневую надо указывать ¯\_(ツ)_/¯
+    nltk.data.path.append(nltk_data_dir)
 
-def prepare_fasttext(root_data_dir, fasttext_model_name = 'cc.en.300.bin'):
-  import fasttext.util, fasttext
 
-  fasttext_model_path = os.path.join(root_data_dir, fasttext_model_name)
-  if not os.path.exists(fasttext_model_path):
-    fasttext.util.download_model('en', if_exists='strict')  # English if_exists=('strict' 'overwrite')
-    shutil.move(fasttext_model_name, fasttext_model_path)
-    print('Model loaded')
-  print('Loading fasttext model from %s...' % fasttext_model_path)
-  model = fasttext.load_model(fasttext_model_path)
-  # print('Model size reducing...')
-  # fasttext.util.reduce_model(model, 100)
+def prepare_fasttext(root_data_dir, fasttext_model_name='cc.en.300.bin'):
+    import fasttext.util
+    import fasttext
 
-  return model
+    fasttext_model_path = os.path.join(root_data_dir, fasttext_model_name)
+    if not os.path.exists(fasttext_model_path):
+        # English if_exists=('strict' 'overwrite')
+        fasttext.util.download_model('en', if_exists='strict')
+        shutil.move(fasttext_model_name, fasttext_model_path)
+        print('Model loaded')
+    print('Loading fasttext model from %s...' % fasttext_model_path)
+    model = fasttext.load_model(fasttext_model_path)
+    # print('Model size reducing...')
+    # fasttext.util.reduce_model(model, 100)
+
+    return model
+
 
 def strong_lemmatizing(row, unique=False):
-  """
-  ['delivery', 'courier', 'delivered', 'shipping', 'shipment', 'delivering', 'deliver', 'dispatch', 'service', 'ordering']
-  """
-  from nltk.stem import WordNetLemmatizer
+    """
+    ['delivery', 'courier', 'delivered', 'shipping', 'shipment', 'delivering', 'deliver', 'dispatch', 'service', 'ordering']
+    """
+    from nltk.stem import WordNetLemmatizer
 
-  lemmatizer = WordNetLemmatizer()
-  pre_tokens = row.split(' ')
-  lemmatized_verbs = [lemmatizer.lemmatize(word, pos='v') for word in pre_tokens]
-  transformed_word = [lemmatizer.lemmatize(word, 'n') for word in lemmatized_verbs]
-  if unique:
-    lemmatized_verbs = list(set(lemmatized_verbs))
-  return lemmatized_verbs
+    lemmatizer = WordNetLemmatizer()
+    pre_tokens = row.split(' ')
+    lemmatized_verbs = [lemmatizer.lemmatize(
+        word, pos='v') for word in pre_tokens]
+    transformed_words = [lemmatizer.lemmatize(
+        word, 'n') for word in lemmatized_verbs]
+    if unique:
+        transformed_words = list(set(lemmatized_verbs))
+    return transformed_words
 
+
+def text_to_pos_tags(text: str):
+    from nltk.tokenize import word_tokenize
+    from nltk.tag import pos_tag
+
+    tokens = word_tokenize(text)
+    pos_tags = [tag for _, tag in pos_tag(tokens)]
+    return ' '.join(pos_tags)
+
+
+def get_tokens_matix(
+        df,
+        tokens_matrix_path,
+        overwrite=False,
+        col_name='content_preprocessed'):
+    if overwrite:
+        print('current version removed')
+        os.remove(tokens_matrix_path)
+    tokens_matrix = np.array([])
+    if os.path.exists(tokens_matrix_path):
+        print('Loading...')
+        tokens_matrix = np.load(tokens_matrix_path, allow_pickle=True)
+    else:
+        print('Transforming...')
+        tokens_matrix = df[col_name].apply(strong_lemmatizing).values
+        print('Saving...')
+        np.save(tokens_matrix_path, tokens_matrix)
+    return tokens_matrix
+
+
+def train_embeds(corpus_texts, embedder, sentence_embedding_path):
+    if os.path.exists(sentence_embedding_path):
+        print('corpus loading from %s' % sentence_embedding_path)
+        passage_embeddings = np.load(sentence_embedding_path)
+    else:
+        print('num rows %d', len(corpus_texts))
+        passage_embeddings = embedder.encode(
+            corpus_texts, show_progress_bar=True)
+        passage_embeddings = np.array(
+            [embedding for embedding in passage_embeddings]).astype("float32")
+        with open(sentence_embedding_path, 'wb') as f:
+            np.save(f, passage_embeddings)
+        print('corpus saved to %s' % sentence_embedding_path)
+    print('Num embeddings %d' % passage_embeddings.shape[0])
+
+
+def get_ngrams(tokens_matrix, window: int):
+    ngrams_flatten = [
+        ' '.join(
+            sorted(ngram)) for sublist in tokens_matrix for ngram in ngrams(
+            sublist,
+            window)]
+    res = Counter(ngrams_flatten)
+    return res
+
+
+def generate_ngram_tags(tokens, max_ngram_range: int = 3):
+    from nltk.util import ngrams
+
+    res = []
+    for window in range(2, max_ngram_range + 1):
+        ngrams_flatten = [' '.join(sorted(ngram))
+                          for ngram in ngrams(tokens, window)]
+        res += ngrams_flatten
+    return res
+
+
+def generate_ngram_tags(tokens, max_ngram_range: int = 3):
+    from nltk.util import ngrams
+    res = []
+    for window in range(2, max_ngram_range + 1):
+        ngrams_flatten = [' '.join(sorted(ngram))
+                          for ngram in ngrams(tokens, window)]
+        res += ngrams_flatten
+    return res
+
+
+def find_closest_tag_levenstein(tag_name, candidates_array):
+    from Levenshtein import distance
+
+    item_distances = [int(100 *
+                          distance(tag_name.lower(), j.lower()) /
+                          len(tag_name)) for j in candidates_array]
+    catalog_entities_sim = np.argsort(item_distances)[:10]
+    print(tag_name, [(candidates_array[k], item_distances[k])
+                     for k in catalog_entities_sim])
+    return catalog_entities_sim
+
+
+def top_similar_tags(tag_id, candidates_array, candidates_embeds, top=10):
+    from sklearn.metrics.pairwise import cosine_similarity
+
+    query_embed = candidates_embeds[tag_id, :]
+    tag_name = candidates_array[tag_id]
+    sims = cosine_similarity(query_embed.reshape(1, -1), candidates_embeds)[0]
+    print(len(sims))
+    top_similar_idx = [int(i) for i in np.argsort(-np.abs(sims))][:top]
+    print(tag_name)
+    res = dict([(candidates_array[k], sims[k]) for k in top_similar_idx])
+    return res
