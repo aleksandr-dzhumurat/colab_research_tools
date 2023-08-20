@@ -1,11 +1,11 @@
 import os
 import shutil
 
-from utils import prepare_dirs
+from . import utils
 
 def prepare_nltk(root_data_dir='/srv/data'):
     nltk_data_dir = os.path.join(root_data_dir, 'nltk_data')
-    prepare_dirs(nltk_data_dir)
+    utils.prepare_dirs(nltk_data_dir)
     import nltk
 
     nltk.download('punkt', download_dir=nltk_data_dir)
