@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='colab_research_tools',
-    version='0.1',
+    version='0.0.2',
     packages=find_packages(),
     install_requires=[
         'nltk==3.6.2',

@@ -88,8 +88,8 @@ def save_pandas(df, worksheet_id, credentials):
   worksheet.update('A1', data_for_sheets)
   print('Complited %d rows' % len(data_for_sheets))
 
-def read_sheet_by_name(name, gc, worksheet=None):
-  pocessed_tags_spreadsheet_id = get_or_create_spreadsheet(name, folder_name=DRIVE_DATA_DIR)
+def read_sheet_by_name(name, folder_name: str, gc, worksheet=None):
+  pocessed_tags_spreadsheet_id = get_or_create_spreadsheet(name, folder_name=folder_name)
   df = gc.open_by_key(pocessed_tags_spreadsheet_id)
   sheet_df = pd.DataFrame([])
   try:
