@@ -66,8 +66,8 @@ def create_spreadsheet(file_name: str, parent_folder_id: str, drive_service):
   new_sheet = drive_service.files().create(body=body).execute()
   return new_sheet['id']
 
-def get_or_create_spreadsheet(filename, folder_name):
-  drive_search_results = find_on_drive(filename)
+def get_or_create_spreadsheet(filename, folder_name, drive_service):
+  drive_search_results = find_on_drive(drive_service, filename)
   spreadsheet_id = None
   if len(drive_search_results) > 0:
     res = sorted(drive_search_results, key=lambda x: x['id'])[0]
@@ -88,8 +88,8 @@ def save_pandas(df, worksheet_id, credentials):
   worksheet.update('A1', data_for_sheets)
   print('Complited %d rows' % len(data_for_sheets))
 
-def read_sheet_by_name(name, folder_name: str, gc, worksheet=None):
-  pocessed_tags_spreadsheet_id = get_or_create_spreadsheet(name, folder_name=folder_name)
+def read_sheet_by_name(name, folder_name: str, gc, drive_service, worksheet=None):
+  pocessed_tags_spreadsheet_id = get_or_create_spreadsheet(name, folder_name=folder_name, drive_service=drive_service)
   df = gc.open_by_key(pocessed_tags_spreadsheet_id)
   sheet_df = pd.DataFrame([])
   try:
