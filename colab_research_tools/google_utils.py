@@ -5,7 +5,7 @@ import gspread_dataframe as gd
 import gspread as gs
 from google.auth import default
 
-def get_get_drive_service():
+def get_drive_service():
     credentials, _ = default()
 
     drive_service = discovery.build('drive', 'v3', credentials=credentials)
@@ -19,7 +19,7 @@ def auth_google_from_colab():
     from google.colab import auth
     auth.authenticate_user()
 
-def auth_google_sheets()
+def auth_google_sheets():
     import gspread
     from google.auth import default
     creds, _ = default()
