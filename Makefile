@@ -8,4 +8,5 @@ make pep8:
 	autopep8 --in-place --aggressive --aggressive --recursive .
 
 version:
-	assets/increment_version.sh
+	assets/increment_version.sh && \
+	git add setup.py

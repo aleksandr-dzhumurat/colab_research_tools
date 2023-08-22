@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='colab_research_tools',
-    version='0.0.4',
+    version='0.0.5',
     packages=find_packages(),
     install_requires=[
         'nltk==3.6.2',
@@ -11,7 +11,8 @@ setup(
         'numpy==1.23.5',
         'sentence-transformers==2.2.2',
         'python-Levenshtein',
-        'transformers[torch]'
+        'transformers[torch]',
+        'tqdm'
     ],
     author='Aleksandr Dzhumurat',
     author_email='adzhumurat@yandex.ru',
