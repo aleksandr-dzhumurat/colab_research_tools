@@ -104,11 +104,16 @@ def train_embeds(corpus_texts, embedder, sentence_embedding_path):
 
 
 def get_ngrams(tokens_matrix, window: int):
+    from nltk.util import ngrams
+
     ngrams_flatten = [
-        ' '.join(
-            sorted(ngram)) for sublist in tokens_matrix for ngram in ngrams(
+        ' '.join(sorted(ngram))
+        for sublist in tokens_matrix
+        for ngram in ngrams(
             sublist,
-            window)]
+            window
+        )
+    ]
     res = Counter(ngrams_flatten)
     return res
 
