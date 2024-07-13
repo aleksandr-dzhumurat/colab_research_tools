@@ -79,9 +79,9 @@ def get_or_create_spreadsheet(filename, folder_name, drive_service):
     spreadsheet_id = create_spreadsheet(filename, parent_folder_id=parent_dir_id, drive_service=drive_service)
   return spreadsheet_id
 
-def save_pandas(df, worksheet_id, credentials):
+def save_pandas(df, worksheet_id):
   credentials, _ = default()
-  
+
   gc = gs.authorize(credentials)
   wb = gc.open_by_key(worksheet_id)
   worksheet = wb.get_worksheet(0)
