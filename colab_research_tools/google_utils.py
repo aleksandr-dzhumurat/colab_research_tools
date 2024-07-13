@@ -80,6 +80,8 @@ def get_or_create_spreadsheet(filename, folder_name, drive_service):
   return spreadsheet_id
 
 def save_pandas(df, worksheet_id, credentials):
+  credentials, _ = default()
+  
   gc = gs.authorize(credentials)
   wb = gc.open_by_key(worksheet_id)
   worksheet = wb.get_worksheet(0)
