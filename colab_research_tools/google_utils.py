@@ -75,8 +75,8 @@ def get_or_create_spreadsheet(filename, folder_name, drive_service):
     print('file %s exists: %s' % (filename, spreadsheet_id))
   else:
     print('file not found, creating')
-    parent_dir_id = find_on_drive(folder_name, is_folder=True)[0]['id']
-    spreadsheet_id = create_spreadsheet(filename, parent_folder_id=parent_dir_id)
+    parent_dir_id = find_on_drive(drive_service, folder_name, is_folder=True)[0]['id']
+    spreadsheet_id = create_spreadsheet(filename, parent_folder_id=parent_dir_id, drive_service=drive_service)
   return spreadsheet_id
 
 def save_pandas(df, worksheet_id, credentials):
