@@ -1,7 +1,6 @@
 from googleapiclient import discovery
 from googleapiclient.errors import HttpError
 
-import gspread_dataframe as gd
 import gspread as gs
 from google.auth import default
 
@@ -12,7 +11,6 @@ def get_drive_service():
 
     return drive_service
 
-import datetime
 import pandas as pd
 
 def auth_google_from_colab():

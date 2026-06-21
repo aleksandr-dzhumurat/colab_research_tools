@@ -6,12 +6,9 @@ setup(
     packages=find_packages(),
     install_requires=[
         'nltk==3.6.2',
-        'fasttext==0.9.2',
-        'pandas==1.5.3',
-        'numpy==1.23.5',
-        'sentence-transformers==2.2.2',
+        'pandas',
+        'numpy',
         'python-Levenshtein',
-        'transformers[torch]',
         'tqdm'
     ],
     author='Aleksandr Dzhumurat',
