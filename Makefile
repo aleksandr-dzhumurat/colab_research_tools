@@ -4,7 +4,7 @@ tag-manual:
 tag:
 	assets/set_tag.sh
 
-make pep8:
+pep8:
 	autopep8 --in-place --aggressive --aggressive --recursive .
 
 version:
