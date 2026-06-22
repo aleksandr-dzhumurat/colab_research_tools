@@ -40,8 +40,8 @@ def strong_lemmatizing(row, unique=False):
 
 
 def text_to_pos_tags(text: str):
-    from nltk.tokenize import word_tokenize
     from nltk.tag import pos_tag
+    from nltk.tokenize import word_tokenize
 
     tokens = word_tokenize(text)
     pos_tags = [tag for _, tag in pos_tag(tokens)]
@@ -93,17 +93,6 @@ def generate_ngram_tags(tokens, max_ngram_range: int = 3):
                           for ngram in ngrams(tokens, window)]
         res += ngrams_flatten
     return res
-
-
-def generate_ngram_tags(tokens, max_ngram_range: int = 3):
-    from nltk.util import ngrams
-    res = []
-    for window in range(2, max_ngram_range + 1):
-        ngrams_flatten = [' '.join(sorted(ngram))
-                          for ngram in ngrams(tokens, window)]
-        res += ngrams_flatten
-    return res
-
 
 def find_closest_tag_levenstein(tag_name, candidates_array):
     from Levenshtein import distance

@@ -50,7 +50,7 @@ def create_spreadsheet(file_name, parent_folder_id, drive_service):
     return new_sheet['id']
 
 
-def get_or_create_spreadsheet(filename, folder_name, drive_service):
+def get_or_create_spreadsheet(filename, drive_service, folder_name=None):
     drive_search_results = find_on_drive(drive_service, filename)
     spreadsheet_id = None
     if len(drive_search_results) > 0:
@@ -58,6 +58,8 @@ def get_or_create_spreadsheet(filename, folder_name, drive_service):
         spreadsheet_id = res['id']
         print('file %s exists: %s' % (filename, spreadsheet_id))
     else:
+        if folder_name is None:
+            raise ValueError('folder_name is required when spreadsheet does not exist')
         print('file not found, creating')
         parent_dir_id = find_on_drive(drive_service, folder_name, is_folder=True)[0]['id']
         spreadsheet_id = create_spreadsheet(filename, parent_folder_id=parent_dir_id, drive_service=drive_service)
@@ -75,8 +77,8 @@ def read_google_sheet_link(gc, drive_link, worksheet=''):
     return sheet_df
 
 
-def read_sheet_by_name(name, folder_name, gc, drive_service, worksheet=None):
-    spreadsheet_id = get_or_create_spreadsheet(name, folder_name=folder_name, drive_service=drive_service)
+def read_sheet_by_name(name, gc, drive_service, folder_name=None, worksheet=None):
+    spreadsheet_id = get_or_create_spreadsheet(name, drive_service=drive_service, folder_name=folder_name)
     df = gc.open_by_key(spreadsheet_id)
     sheet_df = pd.DataFrame([])
     try:
