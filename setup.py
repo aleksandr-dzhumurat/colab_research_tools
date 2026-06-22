@@ -9,7 +9,9 @@ setup(
         'pandas',
         'numpy',
         'python-Levenshtein',
-        'tqdm'
+        'tqdm',
+        'google-api-python-client',
+        'gspread'
     ],
     author='Aleksandr Dzhumurat',
     author_email='adzhumurat@yandex.ru',
